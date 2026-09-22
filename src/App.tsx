@@ -1,19 +1,25 @@
 import { useState, useEffect } from 'react'
-import type { Role, Module, StudentStats } from './types/trilha'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import type { Module, StudentStats } from './types/trilha'
 import { INITIAL_MODULES, INITIAL_TRILHA } from './data/initialData'
 import { Navbar } from './components/Navbar'
 import { DuolingoPath } from './components/DuolingoPath'
 import { ModuleStudyModal } from './components/ModuleStudyModal'
 import { DocenteView } from './components/DocenteView'
 import { ArchitectureFooter } from './components/ArchitectureFooter'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import { LoginPage } from './pages/LoginPage'
+import { AuthProvider } from './context/AuthContext'
+import { useAuth } from './context/useAuth'
 import { playSound } from './utils/audio'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, ShieldAlert } from 'lucide-react'
 
 const STORAGE_KEY_MODULES = 'trilhas_lingo_modules_v2'
 const STORAGE_KEY_STATS = 'trilhas_lingo_stats_v2'
 
-export default function App() {
-  const [role, setRole] = useState<Role>('DISCENTE')
+function MainApp() {
+  const { user } = useAuth()
+  const location = useLocation()
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true)
 
   // Initialize modules from localStorage or initial dataset
@@ -129,20 +135,33 @@ export default function App() {
   const completedCount = modules.filter((m) => m.completed).length
   const totalPercent = Math.round((completedCount / modules.length) * 100)
 
+  // Mensagem de bloqueio por tentativa de acesso cruzado
+  const unauthorizedMessage = (location.state as { message?: string })?.message
+
+  const isLoginPage = location.pathname === '/login'
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 antialiased font-sans flex flex-col justify-between">
-      {/* Top Gamified Navbar */}
-      <Navbar
-        role={role}
-        setRole={setRole}
-        stats={stats}
-        soundEnabled={soundEnabled}
-        setSoundEnabled={setSoundEnabled}
-        trailTitle={INITIAL_TRILHA.title}
-      />
+      {/* Top Global Navbar (Adapta-se ao Aluno ou Professor) */}
+      {!isLoginPage && (
+        <Navbar
+          stats={stats}
+          soundEnabled={soundEnabled}
+          setSoundEnabled={setSoundEnabled}
+          trailTitle={INITIAL_TRILHA.title}
+        />
+      )}
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-8 space-y-8">
+      {/* Main Content Area */}
+      <main className={`flex-1 w-full ${isLoginPage ? '' : 'max-w-6xl mx-auto px-4 py-8 space-y-6'}`}>
+        {/* Alerta de Acesso Bloqueado / Redirecionamento RBAC */}
+        {!isLoginPage && unauthorizedMessage && (
+          <div className="p-4 rounded-2xl bg-rose-500/15 border-2 border-rose-500/40 text-rose-300 text-xs sm:text-sm font-bold flex items-center gap-3 animate-in slide-in-from-top-4 shadow-lg shadow-rose-950/40">
+            <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0" />
+            <span>{unauthorizedMessage}</span>
+          </div>
+        )}
+
         {/* Unlocked Notification Toast */}
         {recentUnlockedTitle && (
           <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-2xl border-2 border-purple-400 flex items-center gap-3 animate-in slide-in-from-bottom-5">
@@ -158,82 +177,102 @@ export default function App() {
           </div>
         )}
 
-        {/* View Switcher based on Role */}
-        {role === 'DISCENTE' ? (
-          /* DISCENTE VIEW (DUOLINGO LEARNING TRAIL) */
-          <div className="space-y-8">
-            {/* Student Welcome Banner */}
-            <section className="relative overflow-hidden rounded-3xl border border-purple-500/25 bg-gradient-to-br from-slate-900 via-slate-900/80 to-purple-950/45 p-6 sm:p-8 shadow-xl">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-2.5 max-w-2xl">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/10 text-purple-300 border border-purple-500/25">
-                      <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-                      Trilha Gamificada Estilo Duolingo
-                    </span>
-                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                      Atividades Geradas por IA
-                    </span>
-                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                      Desbloqueio Sequencial
-                    </span>
-                  </div>
+        {/* Gerenciador de Rotas */}
+        <Routes>
+          {/* Rota Pública de Login */}
+          <Route path="/login" element={<LoginPage />} />
 
-                  <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-                    Trilha: Arquitetura em Nuvem AWS & IA
-                  </h1>
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    Clique no módulo disponível para estudar o material do professor. Responda à atividade ao final do módulo: ao atingir 70%+ de acerto, o modelo é concluído e o <strong>próximo nível é desbloqueado</strong>!
-                  </p>
-                </div>
+          {/* Rota do Aluno (Discente): Protegida exclusivamente para DISCENTE */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute allowedRoles={['DISCENTE']}>
+                <div className="space-y-8 animate-in fade-in duration-200">
+                  {/* Student Welcome Banner */}
+                  <section className="relative overflow-hidden rounded-3xl border border-purple-500/25 bg-gradient-to-br from-slate-900 via-slate-900/80 to-purple-950/45 p-6 sm:p-8 shadow-xl">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div className="space-y-2.5 max-w-2xl">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/10 text-purple-300 border border-purple-500/25">
+                            <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                            Trilha Gamificada Estilo Duolingo
+                          </span>
+                          <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                            Atividades Geradas por IA
+                          </span>
+                          <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                            Desbloqueio Sequencial
+                          </span>
+                        </div>
 
-                {/* Progress Card & Reset Button */}
-                <div className="flex flex-col items-end gap-3 shrink-0">
-                  <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/90 text-right min-w-[200px]">
-                    <div className="flex items-center justify-between text-xs font-bold mb-1.5">
-                      <span className="text-slate-400">Progresso Geral</span>
-                      <span className="text-purple-400">{totalPercent}%</span>
+                        <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+                          Trilha: Arquitetura em Nuvem AWS & IA
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                          Bem-vindo(a), <strong>{user?.name || 'Estudante'}</strong>! Clique no módulo disponível para estudar o material do professor. Responda à atividade ao final do módulo: ao atingir 70%+ de acerto, o modelo é concluído e o <strong>próximo nível é desbloqueado</strong>!
+                        </p>
+                      </div>
+
+                      {/* Progress Card & Reset Button */}
+                      <div className="flex flex-col items-end gap-3 shrink-0">
+                        <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/90 text-right min-w-[200px]">
+                          <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+                            <span className="text-slate-400">Progresso Geral</span>
+                            <span className="text-purple-400">{totalPercent}%</span>
+                          </div>
+                          <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-purple-600 via-violet-500 to-indigo-400 rounded-full transition-all duration-500"
+                              style={{ width: `${totalPercent}%` }}
+                            />
+                          </div>
+                          <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                            {completedCount} de {modules.length} módulos concluídos
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleResetProgress}
+                          className="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1.5 cursor-pointer py-1 px-2 rounded-lg hover:bg-slate-900"
+                          title="Reiniciar trilha para simular novamente"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Reiniciar Progresso</span>
+                        </button>
+                      </div>
                     </div>
-                    <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-purple-600 via-violet-500 to-indigo-400 rounded-full transition-all duration-500"
-                        style={{ width: `${totalPercent}%` }}
-                      />
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-2 font-medium">
-                      {completedCount} de {modules.length} módulos concluídos
-                    </p>
-                  </div>
+                  </section>
 
-                  <button
-                    type="button"
-                    onClick={handleResetProgress}
-                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1.5 cursor-pointer py-1 px-2 rounded-lg hover:bg-slate-900"
-                    title="Reiniciar trilha para simular novamente"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Reiniciar Progresso</span>
-                  </button>
+                  {/* Duolingo Winding Trail Component */}
+                  <DuolingoPath
+                    modules={modules}
+                    onSelectModule={(mod) => setActiveStudyModule(mod)}
+                    soundEnabled={soundEnabled}
+                  />
                 </div>
-              </div>
-            </section>
-
-            {/* Duolingo Winding Trail Component */}
-            <DuolingoPath
-              modules={modules}
-              onSelectModule={(mod) => setActiveStudyModule(mod)}
-              soundEnabled={soundEnabled}
-            />
-          </div>
-        ) : (
-          /* DOCENTE VIEW (AI GENERATOR HUB) */
-          <DocenteView
-            modules={modules}
-            setModules={setModules}
-            soundEnabled={soundEnabled}
-            onPreviewModule={(mod) => setActiveStudyModule(mod)}
+              </ProtectedRoute>
+            }
           />
-        )}
+
+          {/* Rota do Professor (Docente): Protegida exclusivamente para DOCENTE */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['DOCENTE']}>
+                <DocenteView
+                  modules={modules}
+                  setModules={setModules}
+                  soundEnabled={soundEnabled}
+                  onPreviewModule={(mod) => setActiveStudyModule(mod)}
+                />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Redirecionamento de Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
 
         {/* Study & Quiz Interactive Modal */}
         {activeStudyModule && (
@@ -251,7 +290,17 @@ export default function App() {
       </main>
 
       {/* Cloud Architecture & Academic Specs Footer */}
-      <ArchitectureFooter />
+      {!isLoginPage && <ArchitectureFooter />}
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <MainApp />
+      </BrowserRouter>
+    </AuthProvider>
   )
 }

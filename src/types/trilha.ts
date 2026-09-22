@@ -52,3 +52,10 @@ export interface Trilha {
 }
 
 export type Role = 'DISCENTE' | 'DOCENTE'
+
+export interface User {
+  id: string
+  name: string
+  email: string
+  role: Role
+}
