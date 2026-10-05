@@ -5,6 +5,14 @@ export interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   login: (email: string, role: Role, name?: string) => void
+  loginWithGoogle: (credentialResponse: any) => void // Adicione esta linha
+  logout: () => void
+}
+
+export interface AuthContextType {
+  user: User | null
+  isAuthenticated: boolean
+  login: (email: string, role: Role, name?: string) => void
   logout: () => void
 }
 
