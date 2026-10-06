@@ -110,11 +110,11 @@ export const LoginPage: React.FC = () => {
     const clientId = "5mmqehr4ejji1qfskk93h0jfj8";
     const redirectUri = encodeURIComponent("https://midhia.mestre.web.ufersa.dev.br");
 
+    // Adicionamos '&identity_provider=Google' para pular a tela padrão do Cognito e ir direto para o Google
     const cognitoUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${redirectUri}&identity_provider=Google`;
 
     window.location.href = cognitoUrl;
   };
-
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
