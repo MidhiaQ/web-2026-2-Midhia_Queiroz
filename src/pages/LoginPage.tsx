@@ -110,11 +110,11 @@ export const LoginPage: React.FC = () => {
     const clientId = "5mmqehr4ejji1qfskk93h0jfj8";
     const redirectUri = encodeURIComponent("https://midhia.mestre.web.ufersa.dev.br");
 
-    // Adicionamos '&identity_provider=Google' para pular a tela padrão do Cognito e ir direto para o Google
-    const cognitoUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${redirectUri}&identity_provider=Google`;
+    const cognitoUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
 
     window.location.href = cognitoUrl;
   };
+
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
@@ -177,6 +177,14 @@ export const LoginPage: React.FC = () => {
                     <span className="text-xs font-black block">Aluno</span>
                     <span className="text-[10px] text-slate-400">Visão Discente</span>
                   </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCognitoGoogleLogin}
+                  className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300 mb-4"
+                >
+                  <span>Continuar com o Google</span>
                 </button>
 
                 <button
