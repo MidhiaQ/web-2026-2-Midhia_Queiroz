@@ -13,7 +13,7 @@ interface FormErrors {
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, loginWithGoogle, isAuthenticated, user } = useAuth() // 1. Adicionado loginWithGoogle aqui
+  const { login, isAuthenticated, user } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,7 +22,8 @@ export const LoginPage: React.FC = () => {
 
   const stateMessage = (location.state as { message?: string })?.message
 
-  React.useEffect(() => {
+  // Redirecionar se já estiver autenticado
+  useEffect(() => {
     if (isAuthenticated && user) {
       if (user.role === 'DISCENTE') {
         navigate('/', { replace: true })
@@ -32,23 +33,25 @@ export const LoginPage: React.FC = () => {
     }
   }, [isAuthenticated, user, navigate])
 
-  // 2. Efeito para inicializar e renderizar o botão do Google via SDK
+  // Capturar o código de autorização do Cognito ao retornar do Google
   useEffect(() => {
-    // Usamos (window as any) para o TypeScript ignorar a falta da tipagem global do Google
-    if ((window as any).google) {
-      (window as any).google.accounts.id.initialize({
-        client_id: "216438089570-59hckvc1hnbf218l4chjng8v4q40ekq4.apps.googleusercontent.com", // Substitua pelo seu Client ID
-        callback: (response: any) => {
-          loginWithGoogle(response)
-        },
-      })
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
 
-        (window as any).google.accounts.id.renderButton(
-          document.getElementById("google-login-button"),
-          { theme: "outline", size: "large", width: "100%", text: "continue_with" }
-        )
+    if (code) {
+      console.log("Código de autorização do Cognito capturado:", code);
     }
-  }, [loginWithGoogle])
+  }, []);
+
+  const handleGoogleLogin = () => {
+    const domain = "us-east-1nrjdtbnce.auth.us-east-1.amazoncognito.com";
+    const clientId = "1tb6qmngq2o4dh0bvk2317tj3h";
+    const redirectUri = encodeURIComponent("https://midhia.mestre.web.ufersa.dev.br");
+
+    const loginUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
+
+    window.location.href = loginUrl;
+  };
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
@@ -105,16 +108,6 @@ export const LoginPage: React.FC = () => {
     setErrors({})
   }
 
-  const handleGoogleLogin = () => {
-    const domain = "us-east-1nrjdtbnce.auth.us-east-1.amazoncognito.com";
-    const clientId = "1tb6qmngq2o4dh0bvk2317tj3h";
-    const redirectUri = encodeURIComponent("https://midhia.mestre.web.ufersa.dev.br");
-
-    const loginUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
-
-    window.location.href = loginUrl;
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
@@ -142,13 +135,25 @@ export const LoginPage: React.FC = () => {
 
         <div className="rounded-3xl border border-slate-800/90 bg-slate-900/80 backdrop-blur-xl p-7 shadow-2xl shadow-purple-950/20 space-y-6">
 
-          {/* 3. Botão Oficial do Google Inserido no Topo do Card de Login */}
-          <div className="space-y-2">
+          {/* Botão Oficial do Google */}
+          <div className="space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block text-center">
               Autenticação Oficial
             </span>
-            <div id="google-login-button" className="flex justify-center w-full min-h-[40px]"></div>
-            <div className="relative flex py-2 items-center">
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.17 21.32 7.23 24 12 24z" />
+                <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.19C.43 8.13 0 9.87 0 12s.43 3.87 1.19 5.4l4.08-3.16z" />
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.17 2.68 1.19 6.6l4.08 3.16c.95-2.85 3.6-4.96 6.73-4.96z" />
+              </svg>
+              <span>Continuar com o Google</span>
+            </button>
+            <div className="relative flex py-1 items-center">
               <div className="flex-grow border-t border-slate-800"></div>
               <span className="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-widest font-bold">ou tradicional</span>
               <div className="flex-grow border-t border-slate-800"></div>
@@ -177,14 +182,6 @@ export const LoginPage: React.FC = () => {
                     <span className="text-xs font-black block">Aluno</span>
                     <span className="text-[10px] text-slate-400">Visão Discente</span>
                   </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300 mb-4"
-                >
-                  <span>Continuar com o Google</span>
                 </button>
 
                 <button
