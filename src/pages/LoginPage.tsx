@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import type { Role } from '../types/trilha'
@@ -15,10 +15,10 @@ export const LoginPage: React.FC = () => {
   const location = useLocation()
   const { login, isAuthenticated, user } = useAuth()
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [role, setRole] = useState<Role>('DISCENTE')
-  const [errors, setErrors] = useState<FormErrors>({})
+  const [email, setEmail] = React.useState('')
+  const [password, setPassword] = React.useState('')
+  const [role, setRole] = React.useState<Role>('DISCENTE')
+  const [errors, setErrors] = React.useState<FormErrors>({})
 
   const stateMessage = (location.state as { message?: string })?.message
 
@@ -42,19 +42,6 @@ export const LoginPage: React.FC = () => {
       console.log("Código de autorização do Cognito capturado:", code);
     }
   }, []);
-
-  const handleGoogleLogin = () => {
-    const domain = "us-east-1nrjdtbnce.auth.us-east-1.amazoncognito.com";
-    const clientId = "1tb6qmngq2o4dh0bvk2317tj3h";
-    const redirectUri = encodeURIComponent("https://midhia.mestre.web.ufersa.dev.br");
-
-    const loginUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
-
-    console.log("A redirecionar para:", loginUrl);
-
-    // Força a navegação limpando qualquer bloqueio de evento
-    window.location.replace(loginUrl);
-  };
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
@@ -138,27 +125,23 @@ export const LoginPage: React.FC = () => {
 
         <div className="rounded-3xl border border-slate-800/90 bg-slate-900/80 backdrop-blur-xl p-7 shadow-2xl shadow-purple-950/20 space-y-6">
 
-          {/* Botão Oficial do Google */}
-          <div className="space-y-3 relative z-20">
+          {/* Botão Oficial do Google via Link Nativo */}
+          <div className="space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block text-center">
               Autenticação Oficial
             </span>
-            <button
-              type="button"
-              onClick={() => {
-                console.log("Botão do Google clicado!");
-                handleGoogleLogin();
-              }}
-              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300 relative z-30 pointer-events-auto"
+            <a
+              href="https://us-east-1nrjdtbnce.auth.us-east-1.amazoncognito.com/oauth2/authorize?client_id=1tb6qmngq2o4dh0bvk2317tj3h&response_type=code&scope=email+openid+profile&redirect_uri=https%3A%2F%2Fmidhia.mestre.web.ufersa.dev.br&identity_provider=Google"
+              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300 no-underline"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z" />
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.17 21.32 7.23 24 12 24z" />
                 <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.19C.43 8.13 0 9.87 0 12s.43 3.87 1.19 5.4l4.08-3.16z" />
                 <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.17 2.68 1.19 6.6l4.08 3.16c.95-2.85 3.6-4.96 6.73-4.96z" />
               </svg>
               <span>Continuar com o Google</span>
-            </button>
+            </a>
             <div className="relative flex py-1 items-center">
               <div className="flex-grow border-t border-slate-800"></div>
               <span className="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-widest font-bold">ou tradicional</span>
