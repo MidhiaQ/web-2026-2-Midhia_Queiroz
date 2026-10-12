@@ -136,14 +136,17 @@ export const LoginPage: React.FC = () => {
         <div className="rounded-3xl border border-slate-800/90 bg-slate-900/80 backdrop-blur-xl p-7 shadow-2xl shadow-purple-950/20 space-y-6">
 
           {/* Botão Oficial do Google */}
-          <div className="space-y-3">
+          <div className="space-y-3 relative z-20">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block text-center">
               Autenticação Oficial
             </span>
             <button
               type="button"
-              onClick={handleGoogleLogin}
-              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300"
+              onClick={() => {
+                console.log("Botão do Google clicado!");
+                handleGoogleLogin();
+              }}
+              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300 relative z-30 pointer-events-auto"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z" />
