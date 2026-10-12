@@ -50,8 +50,10 @@ export const LoginPage: React.FC = () => {
 
     const loginUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
 
-    console.log("Botão do Google clicado!");
-    window.location.href = loginUrl; // Força o redirecionamento imediato
+    console.log("A redirecionar para:", loginUrl);
+
+    // Força a navegação limpando qualquer bloqueio de evento
+    window.location.replace(loginUrl);
   };
 
   const validate = (): boolean => {
