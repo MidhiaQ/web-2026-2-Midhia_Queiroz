@@ -33,13 +33,18 @@ export const LoginPage: React.FC = () => {
     }
   }, [isAuthenticated, user, navigate])
 
-  // Capturar o código de autorização do Cognito ao retornar do Google
+  // Capturar os tokens JWT da URL ao retornar do Google (Implicit Grant)
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
+    const hash = window.location.hash;
+    if (hash && hash.includes('id_token=')) {
+      const params = new URLSearchParams(hash.substring(1));
+      const idToken = params.get('id_token');
+      const accessToken = params.get('access_token');
 
-    if (code) {
-      console.log("Código de autorização do Cognito capturado:", code);
+      if (idToken) {
+        console.log("ID Token JWT capturado com sucesso:", idToken);
+        console.log("Access Token JWT capturado com sucesso:", accessToken);
+      }
     }
   }, []);
 
@@ -125,13 +130,13 @@ export const LoginPage: React.FC = () => {
 
         <div className="rounded-3xl border border-slate-800/90 bg-slate-900/80 backdrop-blur-xl p-7 shadow-2xl shadow-purple-950/20 space-y-6">
 
-          {/* Botão Oficial do Google via Link Nativo com escopo corrigido (email openid phone) */}
+          {/* Botão Oficial do Google via Link Nativo com response_type=token */}
           <div className="space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block text-center">
               Autenticação Oficial
             </span>
             <a
-              href="https://us-east-1nrjdtbnce.auth.us-east-1.amazoncognito.com/oauth2/authorize?client_id=1tb6qmngq2o4dh0bvk2317tj3h&response_type=code&scope=email+openid+phone&redirect_uri=https%3A%2F%2Fmidhia.mestre.web.ufersa.dev.br&identity_provider=Google"
+              href="https://us-east-1nrjdtbnce.auth.us-east-1.amazoncognito.com/oauth2/authorize?client_id=1tb6qmngq2o4dh0bvk2317tj3h&response_type=token&scope=email+openid+phone&redirect_uri=https%3A%2F%2Fmidhia.mestre.web.ufersa.dev.br&identity_provider=Google"
               className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300 no-underline"
             >
               <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
