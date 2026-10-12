@@ -125,14 +125,22 @@ export const LoginPage: React.FC = () => {
 
         <div className="rounded-3xl border border-slate-800/90 bg-slate-900/80 backdrop-blur-xl p-7 shadow-2xl shadow-purple-950/20 space-y-6">
 
-          {/* Botão Oficial do Google via Link Nativo */}
+          {/* Botão Oficial do Google */}
           <div className="space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block text-center">
               Autenticação Oficial
             </span>
-            <a
-              href="https://us-east-1nrjdtbnce.auth.us-east-1.amazoncognito.com/oauth2/authorize?client_id=1tb6qmngq2o4dh0bvk2317tj3h&response_type=code&scope=email+openid+profile&redirect_uri=https%3A%2F%2Fmidhia.mestre.web.ufersa.dev.br&identity_provider=Google"
-              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300 no-underline"
+            <button
+              type="button"
+              onClick={() => {
+                const domain = "us-east-1nrjdtbnce.auth.us-east-1.amazoncognito.com";
+                const clientId = "1tb6qmngq2o4dh0bvk2317tj3h";
+                const redirectUri = encodeURIComponent("https://midhia.mestre.web.ufersa.dev.br");
+                const loginUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
+
+                window.location.assign(loginUrl);
+              }}
+              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300"
             >
               <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z" />
@@ -141,7 +149,7 @@ export const LoginPage: React.FC = () => {
                 <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.17 2.68 1.19 6.6l4.08 3.16c.95-2.85 3.6-4.96 6.73-4.96z" />
               </svg>
               <span>Continuar com o Google</span>
-            </a>
+            </button>
             <div className="relative flex py-1 items-center">
               <div className="flex-grow border-t border-slate-800"></div>
               <span className="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-widest font-bold">ou tradicional</span>
