@@ -138,7 +138,8 @@ function MainApp() {
   // Mensagem de bloqueio por tentativa de acesso cruzado
   const unauthorizedMessage = (location.state as { message?: string })?.message
 
-  const isLoginPage = location.pathname === '/login'
+  // Na raiz '/' agora fica a LoginPage, logo a navbar só oculta se estivermos estritamente em '/'
+  const isLoginPage = location.pathname === '/'
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 antialiased font-sans flex flex-col justify-between">
@@ -179,12 +180,12 @@ function MainApp() {
 
         {/* Gerenciador de Rotas */}
         <Routes>
-          {/* Rota Pública de Login */}
-          <Route path="/login" element={<LoginPage />} />
+          {/* Rota Raiz (Página de Login Oficial) */}
+          <Route path="/" element={<LoginPage />} />
 
           {/* Rota do Aluno (Discente): Protegida exclusivamente para DISCENTE */}
           <Route
-            path="/"
+            path="/aluno"
             element={
               <ProtectedRoute allowedRoles={['DISCENTE']}>
                 <div className="space-y-8 animate-in fade-in duration-200">
