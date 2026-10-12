@@ -105,14 +105,14 @@ export const LoginPage: React.FC = () => {
     setErrors({})
   }
 
-  const handleCognitoGoogleLogin = () => {
-    const domain = "us-east-1kndsmvatz.auth.us-east-1.amazoncognito.com";
-    const clientId = "5mmqehr4ejji1qfskk93h0jfj8";
+  const handleGoogleLogin = () => {
+    const domain = "us-east-1nrjdtbnce.auth.us-east-1.amazoncognito.com";
+    const clientId = "1tb6qmngq2o4dh0bvk2317tj3h";
     const redirectUri = encodeURIComponent("https://midhia.mestre.web.ufersa.dev.br");
 
-    const cognitoUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
+    const loginUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
 
-    window.location.href = cognitoUrl;
+    window.location.href = loginUrl;
   };
 
   return (
@@ -181,7 +181,7 @@ export const LoginPage: React.FC = () => {
 
                 <button
                   type="button"
-                  onClick={handleCognitoGoogleLogin}
+                  onClick={handleGoogleLogin}
                   className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 font-bold text-sm text-slate-800 shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-slate-300 mb-4"
                 >
                   <span>Continuar com o Google</span>
